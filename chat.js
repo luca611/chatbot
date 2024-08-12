@@ -49,6 +49,51 @@ document.getElementById('send-button').addEventListener('click', async () => {
 window.addEventListener('load', () => {
     const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
     chatHistory.forEach(({ message, isUser }) => {
-        displayChatMessage(message, isUser,true);
+        displayChatMessage(message, isUser, true);
     });
+});
+
+//speech recognition
+document.getElementById('startButton').addEventListener('click', function() {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    const selectedLanguage = document.getElementById('language-select').value;
+    recognition.lang = selectedLanguage;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.start();
+
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('user-input').value = transcript;
+    };
+
+    recognition.onspeechend = function() {
+        recognition.stop();
+    };
+
+    recognition.onerror = function(event) {
+        console.log('Error occurred in recognition. Try again.');
+    };
+});
+
+// Save language preference to local storage
+const saveLanguagePreference = (language) => {
+    localStorage.setItem('languagePreference', language);
+};
+
+// Load language preference from local storage on page load
+const loadLanguagePreference = () => {
+    const languagePreference = localStorage.getItem('languagePreference');
+    if (languagePreference) {
+        document.getElementById('language-select').value = languagePreference;
+    }
+};
+
+// Call the loadLanguagePreference function on page load
+window.addEventListener('load', loadLanguagePreference);
+
+document.getElementById('language-select').addEventListener('change', function() {
+    const selectedLanguage = this.value;
+    saveLanguagePreference(selectedLanguage);
 });

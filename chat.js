@@ -30,6 +30,23 @@ async function displayChatMessage(message, isUser = false, isHistory = false) {
     }
 }
 
+document.getElementById('user-input').addEventListener('keydown', async (event) => {
+    if (event.key === 'Enter') {
+        const userInput = document.getElementById('user-input');
+        const userMessage = userInput.value;
+
+        // Display user's message
+        await displayChatMessage(userMessage, true);
+
+        // Get and display the response from Groq API
+        const responseMessage = await getGroqChatCompletion(userMessage);
+        await displayChatMessage(responseMessage);
+
+        // Clear input field
+        userInput.value = '';
+    }
+});
+
 document.getElementById('send-button').addEventListener('click', async () => {
     const userInput = document.getElementById('user-input');
     const userMessage = userInput.value;
@@ -54,7 +71,7 @@ window.addEventListener('load', () => {
 });
 
 //speech recognition
-document.getElementById('startButton').addEventListener('click', function() {
+document.getElementById('startButton').addEventListener('click', function () {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     const selectedLanguage = document.getElementById('language-select').value;
     recognition.lang = selectedLanguage;
@@ -63,16 +80,16 @@ document.getElementById('startButton').addEventListener('click', function() {
 
     recognition.start();
 
-    recognition.onresult = function(event) {
+    recognition.onresult = function (event) {
         const transcript = event.results[0][0].transcript;
         document.getElementById('user-input').value = transcript;
     };
 
-    recognition.onspeechend = function() {
+    recognition.onspeechend = function () {
         recognition.stop();
     };
 
-    recognition.onerror = function(event) {
+    recognition.onerror = function (event) {
         console.log('Error occurred in recognition. Try again.');
     };
 });
@@ -93,7 +110,7 @@ const loadLanguagePreference = () => {
 // Call the loadLanguagePreference function on page load
 window.addEventListener('load', loadLanguagePreference);
 
-document.getElementById('language-select').addEventListener('change', function() {
+document.getElementById('language-select').addEventListener('change', function () {
     const selectedLanguage = this.value;
     saveLanguagePreference(selectedLanguage);
 });

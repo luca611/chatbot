@@ -8,7 +8,7 @@ async function getGroqChatCompletion(userMessage) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            messages: [{ role: 'user', content: "(chat history)" + getLastFiveAssistantAnswers() + "(answer guideline)" + "when writing code MUST use this structure <pre> <span> <b>code lang</b> </span> <div class='code'><code>'answer code'</code></div></pre>" + "(new question)" + userMessage }],
+            messages: [{ role: 'user', content: "(chat history)" + getLastFiveAssistantAnswers() + "(answer guideline)" + "ONLY when writing code MUST use this structure <pre> <span> <b>code lang</b> </span> <div class='code'><code>'answer code'</code></div></pre>" + "(new question)" + userMessage }],
             model: 'llama3-70b-8192'
         })
     });
@@ -23,9 +23,19 @@ async function displayChatMessage(message, isUser = false, isHistory = false) {
     const chatLog = document.getElementById('chat-log');
     const messageContainer = document.createElement('div');
     const messageElement = document.createElement('div');
+    const copyButton = document.createElement('button');
+    copyButton.innerHTML = "Copy";
+    copyButton.className = "copy";
+    copyButton.onclick = function () {
+        copyButton.innerHTML = "Copied!";
+        navigator.clipboard.writeText(message);
+    };
     messageElement.innerHTML = message;
     messageContainer.className = 'answerContainer';
+    messageContainer.id = history.length + 1;
     messageElement.className = isUser ? 'userMessage' : 'aiMessage';
+
+    isUser ? "" : messageElement.appendChild(copyButton);
     messageContainer.appendChild(messageElement);
     chatLog.appendChild(messageContainer);
     scrollToBottom("chat-log");
@@ -41,6 +51,12 @@ document.getElementById('user-input').addEventListener('keydown', async (event) 
     if (event.key === 'Enter') {
         const userInput = document.getElementById('user-input');
         const userMessage = userInput.value;
+        if (userMessage.trim() === '') {
+            return;
+        }
+
+        // Clear input field
+        userInput.value = '';
 
         // Display user's message
         await displayChatMessage(userMessage, true);
@@ -48,16 +64,15 @@ document.getElementById('user-input').addEventListener('keydown', async (event) 
         // Get and display the response from Groq API
         const responseMessage = await getGroqChatCompletion(userMessage);
         await displayChatMessage(responseMessage);
-
-        // Clear input field
-        userInput.value = '';
     }
 });
 
 document.getElementById('send-button').addEventListener('click', async () => {
     const userInput = document.getElementById('user-input');
     const userMessage = userInput.value;
-
+    if (userMessage.trim() === '') {
+        return;
+    }
     // Display user's message
     await displayChatMessage(userMessage, true);
 
@@ -141,8 +156,8 @@ function getLastFiveAssistantAnswers() {
 }
 
 function scrollToBottom() {
-    const div = document.getElementById("chat-log");
+    const div = document.getElementById("chat-container");
     div.scrollTop = div.scrollHeight;
-  }
+}
 
-  window.onload = scrollToBottom();
+window.onload = scrollToBottom();

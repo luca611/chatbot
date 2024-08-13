@@ -1,4 +1,4 @@
-const apiKey = 'your-api-key';
+const apiKey = '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';
 
 async function getGroqChatCompletion(userMessage) {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
